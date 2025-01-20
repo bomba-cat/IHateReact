@@ -14,6 +14,7 @@ const supabase = createClient(
 
 function App() {
   const [notes, setNotes] = useState([]);
+  const [newNote, setNewNote] = useState(""); 
   const [session, setSession] = useState(null);
 
   useEffect(() => {
@@ -38,6 +39,21 @@ function App() {
     }
   }
 
+  async function addNote(e) {
+    e.preventDefault();
+    if (!newNote.trim()) {
+      alert("Bitte geben Sie eine Notiz ein.");
+      return;
+    }
+    const { error } = await supabase.from("notizen").insert([{ notiz: newNote }]);
+    if (error) {
+      console.error("Fehler beim Hinzufügen der Notiz:", error);
+    } else {
+      setNewNote("");
+      getNotes(); 
+    }
+  }
+
   if (!session) {
     return (
       <Auth
@@ -56,6 +72,15 @@ function App() {
           <li key={note.id}>{note.notiz}</li>
         ))}
       </ul>
+      <form onSubmit={addNote}>
+        <input
+          type="text"
+          placeholder="Neue Notiz eingeben"
+          value={newNote}
+          onChange={(e) => setNewNote(e.target.value)}
+        />
+        <button type="submit">Hinzufügen</button>
+      </form>
     </div>
   );
 }
